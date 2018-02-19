@@ -12,6 +12,24 @@ type QCloudArg interface {
 	EncodeStructWithPrefix(prefix string, val reflect.Value, v *url.Values) error
 }
 
+func isEmptyValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
+	}
+	return false
+}
+
 func EncodeStruct(i interface{}, v *url.Values) error {
 	val := reflect.ValueOf(i)
 	return encodeStructWithPrefix("", val, v)
@@ -39,6 +57,9 @@ func encodeStructWithPrefix(prefix string, val reflect.Value, v *url.Values) err
 						}
 						continue
 					}
+				}
+				if opts.Contains("omitempty") && isEmptyValue(fieldVal) {
+					continue
 				}
 				p := strings.Join([]string{prefix, tag}, ".")
 				if err := encodeStructWithPrefix(p, fieldVal, v); err != nil {

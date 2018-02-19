@@ -8,6 +8,8 @@ import (
 
 const (
 	CvmHost = "cvm.api.qcloud.com"
+	DfwHost = "dfw.api.qcloud.com"
+
 	CvmPath = "/v2/index.php"
 )
 
